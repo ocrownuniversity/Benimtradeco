@@ -372,6 +372,39 @@ tbody tr:hover{background:var(--bg)}
   <p>Connecting to Benimtradeco…</p>
 </div>
 
+<!-- ══ LOCK SCREEN ══ -->
+<div class="screen screen-bg" id="lock-screen" style="display:none">
+  <div class="lcard">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:2rem;font-weight:800;color:#1E3A8A;letter-spacing:-1px">🏪 Benimtradeco</div>
+      <div style="font-size:.85rem;color:#6B7280;margin-top:4px">Inventory Management System</div>
+    </div>
+    <div class="ltitle" style="text-align:center">Enter Access PIN</div>
+    <div class="lsub" style="text-align:center">Enter your 4-digit PIN to continue</div>
+    <div class="pin-dots">
+      <div class="pd" id="d0"></div>
+      <div class="pd" id="d1"></div>
+      <div class="pd" id="d2"></div>
+      <div class="pd" id="d3"></div>
+    </div>
+    <div id="pin-err" class="errbox h">❌ Wrong PIN. Try again.</div>
+    <div class="numpad">
+      <button class="nk" onclick="pk('1')">1</button>
+      <button class="nk" onclick="pk('2')">2</button>
+      <button class="nk" onclick="pk('3')">3</button>
+      <button class="nk" onclick="pk('4')">4</button>
+      <button class="nk" onclick="pk('5')">5</button>
+      <button class="nk" onclick="pk('6')">6</button>
+      <button class="nk" onclick="pk('7')">7</button>
+      <button class="nk" onclick="pk('8')">8</button>
+      <button class="nk" onclick="pk('9')">9</button>
+      <button class="nk" style="grid-column:span 2" onclick="pk('0')">0</button>
+      <button class="nk" onclick="pdel()">⌫</button>
+    </div>
+    <div class="lfoot"><span class="pdot"></span> Benimtradeco · Secured</div>
+  </div>
+</div>
+
 <!-- ══ MAIN APP ══ -->
 <div id="app" class="h" style="display:none">
 <div style="display:flex;min-height:100vh">
@@ -894,7 +927,7 @@ const fmt  = v  => (CFG.currency||'₦')+parseFloat(v||0).toFixed(2);
 const fmtDT= d  => { try{ return new Date(d).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch{return'—';} };
 const fmtD = d  => { try{ const dt=new Date(d); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }catch{return'';} };
 const tAgo = d  => { const m=Math.floor((Date.now()-new Date(d))/ 60000); if(m<1)return'just now'; if(m<60)return m+'m ago'; const h=Math.floor(m/60); if(h<24)return h+'h ago'; return Math.floor(h/24)+'d ago'; };
-function show(id){ ['lock-screen','app'].forEach(s=>{ const e=g(s); if(e){e.classList.add('h');e.style.display='none';} }); const t=g(id); if(t){t.classList.remove('h');t.style.display='';} }
+function show(id){ ['lock-screen','app','loading'].forEach(s=>{ const e=g(s); if(e){e.classList.add('h');e.style.display='none';} }); const t=g(id); if(t){t.classList.remove('h');t.style.display='';} }
 function toast(msg,t='i'){ const el=document.createElement('div'); el.className='toast '+t; el.textContent={'s':'✅ ','e':'❌ ','i':'ℹ️ ','w':'⚠️ '}[t]+msg; g('toast-w').appendChild(el); setTimeout(()=>{el.classList.add('tout');setTimeout(()=>el.remove(),300);},3200); }
 function ferr(id,msg){ const e=g(id); if(e){e.textContent=msg;e.classList.remove('h');} }
 function tpw(id){ const e=g(id); if(e) e.type=e.type==='password'?'text':'password'; }
