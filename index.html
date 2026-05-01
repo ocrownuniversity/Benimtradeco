@@ -362,6 +362,12 @@ tbody tr:hover{background:var(--bg)}
 .half-btn{padding:4px 9px;border-radius:6px;font-size:.73rem;font-weight:700;cursor:pointer;background:var(--bg);border:1.5px solid var(--bord);color:var(--t2);transition:all .15s}
 .half-btn:hover{background:#2563EB;color:#fff;border-color:#2563EB}
 </style>
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Benimtradeco%22%2C%22short_name%22%3A%22Benim%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230F1F45%22%2C%22theme_color%22%3A%22%230F1F45%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F192x192%2F0F1F45%2Fffffff%3Ftext%3DBW%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%2C%7B%22src%22%3A%22https%3A%2F%2Fplacehold.co%2F512x512%2F0F1F45%2Fffffff%3Ftext%3DBW%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D"/>
+<meta name="theme-color" content="#0F1F45"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Benimtradeco"/>
 </head>
 <body>
 
@@ -887,7 +893,7 @@ const db = firebase.firestore();
 
 // -- FIXED STORE ID & PIN --------------------------
 const STORE_ID = 'benimtradeco';
-const ACCESS_PIN = '1996';
+let ACCESS_PIN = '1996';
 
 // -- APP STATE -------------------------------------
 let ME       = null;
@@ -941,7 +947,12 @@ function toggleDark(){ DARK=!DARK; localStorage.setItem('sp_dark',DARK?'1':'0');
 applyDark();
 
 // -- INIT ------------------------------------------
-function initApp(){
+async function initApp(){
+  // Load saved PIN from Firestore if it exists
+  try{
+    const doc = await db.collection('system').doc('benimtradeco-config').get();
+    if(doc.exists && doc.data().pin){ ACCESS_PIN = doc.data().pin; }
+  }catch(e){ console.warn('Could not load PIN config:', e.message); }
   g('loading').classList.add('h');
   show('lock-screen');
 }
@@ -1615,11 +1626,10 @@ async function changePIN(){
   if(!/^\d{4}$/.test(nw)) return toast('PIN must be 4 digits','e');
   if(nw!==cf) return toast('PINs do not match','e');
   try{
-    // Store new PIN in Firestore so it persists
     await db.collection('system').doc('benimtradeco-config').set({pin:nw},{merge:true});
-    // Update in memory — note: ACCESS_PIN is const, so we store in Firestore only
+    ACCESS_PIN = nw; // Update in memory immediately so new PIN works right away
     g('s-old').value='';g('s-new').value='';g('s-cf').value='';
-    toast('PIN updated! You will need the new PIN next login.','s');
+    toast('PIN updated successfully! Use new PIN next time.','s');
   }catch(e){toast('Failed: '+e.message,'e');}
 }
 
