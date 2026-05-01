@@ -1,11 +1,12 @@
-const CACHE_NAME = 'benimtradeco-v1';
+const CACHE_NAME = 'benimtradeco-v2';
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json'
+  '/Benimtradeco/',
+  '/Benimtradeco/index.html',
+  '/Benimtradeco/manifest.json',
+  '/Benimtradeco/icon-192.png',
+  '/Benimtradeco/icon-512.png'
 ];
 
-// Install - cache core files
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
@@ -13,7 +14,6 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Activate - clean old caches
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -23,27 +23,23 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch - network first, fallback to cache
 self.addEventListener('fetch', e => {
-  // Skip Firebase and external requests - always go network for those
   if (
     e.request.url.includes('firebaseio.com') ||
     e.request.url.includes('googleapis.com') ||
     e.request.url.includes('firestore.googleapis.com') ||
     e.request.url.includes('identitytoolkit') ||
     e.request.url.includes('paystack') ||
-    e.request.url.includes('emailjs')
-  ) {
-    return;
-  }
+    e.request.url.includes('emailjs') ||
+    e.request.url.includes('gstatic.com')
+  ) return;
 
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        // Cache a copy of successful responses for local assets
-        if (res && res.status === 200 && e.request.url.startsWith(self.location.origin)) {
-          const resClone = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
         }
         return res;
       })
