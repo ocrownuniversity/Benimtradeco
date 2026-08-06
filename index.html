@@ -426,6 +426,7 @@ tbody tr:hover{background:var(--bg)}
     <a class="sb-lk" data-pg="alerts" onclick="nav('alerts')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Alerts<span class="sb-badge" id="sb-notif"></span></a>
     <a class="sb-lk" data-pg="returns" id="nav-returns" onclick="nav('returns')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Returns</a>
     <a class="sb-lk" data-pg="expenses" id="nav-expenses" onclick="nav('expenses')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>Expenses</a>
+    <a class="sb-lk" data-pg="debts" id="nav-debts" onclick="nav('debts')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Debts<span class="sb-badge" id="sb-debts"></span></a>
     <div class="sb-sec" id="admin-section">Admin</div>
     <a class="sb-lk" data-pg="staff" id="nav-staff" onclick="nav('staff')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</a>
     <!-- SA only: Buyers nav -->
@@ -613,6 +614,41 @@ tbody tr:hover{background:var(--bg)}
           <table>
             <thead><tr><th>#</th><th>Title</th><th>Category</th><th>Amount</th><th>Note</th><th>Date</th><th></th></tr></thead>
             <tbody id="exp-tb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEBTS -->
+    <div class="pg" id="pg-debts">
+      <div class="pg-head">
+        <div><h2>Debts</h2><div class="pg-sub" id="debt-sub">0 debts</div></div>
+        <button class="btn btn-b btn-sm" onclick="openDebtModal()">+ Record Debt</button>
+      </div>
+      <!-- Summary Cards -->
+      <div class="sg" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
+        <div class="sc"><div><div class="label">Total Owed</div><div class="value" style="color:#DC2626" id="debt-total">₦0</div></div></div>
+        <div class="sc"><div><div class="label">Collected</div><div class="value" style="color:#059669" id="debt-collected">₦0</div></div></div>
+        <div class="sc"><div><div class="label">Outstanding</div><div class="value" style="color:#D97706" id="debt-outstanding">₦0</div></div></div>
+      </div>
+      <!-- Filter -->
+      <div class="card" style="margin-bottom:14px;padding:12px 14px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input class="fc" style="flex:1;min-width:140px" id="debt-search" placeholder="🔍 Search by customer…" oninput="renderDebts()"/>
+          <select class="fc" style="min-width:130px" id="debt-status-filter" onchange="renderDebts()">
+            <option value="">All Status</option>
+            <option value="owing">Owing</option>
+            <option value="paid">Paid Off</option>
+          </select>
+          <button class="btn btn-o btn-sm" onclick="exportDebtCSV()">📤 Export</button>
+        </div>
+      </div>
+      <!-- Table -->
+      <div class="card">
+        <div class="tw">
+          <table>
+            <thead><tr><th>#</th><th>Customer</th><th>Phone</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Due Date</th><th>Status</th><th></th></tr></thead>
+            <tbody id="debt-tb"></tbody>
           </table>
         </div>
       </div>
@@ -1100,9 +1136,9 @@ function nav(pg){
   document.querySelectorAll('.sb-lk').forEach(l=>l.classList.remove('on'));
   const p=g('pg-'+pg); if(p) p.classList.add('on');
   const l=document.querySelector('[data-pg="'+pg+'"]'); if(l) l.classList.add('on');
-  const titles={dashboard:'Dashboard',products:'Products',sales:'Sales',reports:'Reports',alerts:'Alerts',staff:'Staff',returns:'Returns',settings:'Settings',customers:'Customers'};
+  const titles={dashboard:'Dashboard',products:'Products',sales:'Sales',reports:'Reports',alerts:'Alerts',staff:'Staff',returns:'Returns',settings:'Settings',customers:'Customers',expenses:'Expenses',debts:'Debts'};
   g('tb-title').textContent=titles[pg]||pg;
-  const renderMap={dashboard:renderDash,products:renderProds,sales:renderSales,reports:renderRpt,alerts:renderNotifs,staff:renderStaff,returns:renderReturns,customers:renderCustomers,expenses:renderExpenses};
+  const renderMap={dashboard:renderDash,products:renderProds,sales:renderSales,reports:renderRpt,alerts:renderNotifs,staff:renderStaff,returns:renderReturns,customers:renderCustomers,expenses:renderExpenses,debts:renderDebts};
   if(renderMap[pg]) renderMap[pg]();
   const fetchMap={
     returns:()=>loadReturns(),
@@ -1110,6 +1146,7 @@ function nav(pg){
     alerts:()=>{ db.collection('buyers').doc(BID).collection('notifications').get().then(n=>{NOTIFS=n.docs.map(d=>{const dt=d.data();return{id:d.id,...dt,time:dt.time?.toDate?.()|| new Date()};});NOTIFS.sort((a,b)=>new Date(b.time)-new Date(a.time));renderNotifs();updBadges();}).catch(()=>{}); },
     customers:()=>subscribeCustomers(),
     expenses:()=>loadExpenses(),
+    debts:()=>loadDebts(),
   };
   if(fetchMap[pg]) fetchMap[pg]();
   closeSB();
@@ -1122,7 +1159,7 @@ function closeSB(){ g('sidebar').classList.remove('open'); g('sb-ovl').classList
 function logout(){
   UNSUBS.forEach(fn=>fn&&fn()); UNSUBS=[];
   ME=null; BID=STORE_ID;
-  PRODS=[]; SALES=[]; NOTIFS=[]; STAFF=[]; CUSTOMERS=[]; RETURNS=[];
+  PRODS=[]; SALES=[]; NOTIFS=[]; STAFF=[]; CUSTOMERS=[]; RETURNS=[]; DEBTS=[];
   pBuf=''; pDots();
   show('lock-screen');
 }
@@ -1634,7 +1671,7 @@ function renderNotifs(){
 async function markRead(id){ try{ await db.collection('buyers').doc(BID).collection('notifications').doc(id).update({read:true}); const n=NOTIFS.find(x=>x.id===id); if(n) n.read=true; renderNotifs(); updBadges(); }catch(e){} }
 async function markAllRead(){ const batch=db.batch(); NOTIFS.filter(n=>!n.read).forEach(n=>batch.update(db.collection('buyers').doc(BID).collection('notifications').doc(n.id),{read:true})); try{await batch.commit();NOTIFS.forEach(n=>n.read=true);renderNotifs();updBadges();toast('All read','s');}catch(e){} }
 function checkLowStock(){ PRODS.filter(p=>p.quantity<=(p.lowAt||CFG.threshold)).forEach(p=>{ const exists=NOTIFS.some(n=>!n.read&&n.text?.includes(p.name)); if(!exists) addNotif('warn','Low Stock',p.name+' is low ('+p.quantity+' units).'); }); }
-function updBadges(){ const u=NOTIFS.filter(n=>!n.read).length; const ts=SALES.filter(s=>new Date(s.timestamp).toDateString()===new Date().toDateString()).length; g('sb-notif').textContent=u||''; g('sb-sales').textContent=ts||''; u>0?g('tb-ndot').classList.remove('h'):g('tb-ndot').classList.add('h'); }
+function updBadges(){ const u=NOTIFS.filter(n=>!n.read).length; const ts=SALES.filter(s=>new Date(s.timestamp).toDateString()===new Date().toDateString()).length; const owing=DEBTS.filter(d=>debtBalance(d)>0).length; g('sb-notif').textContent=u||''; g('sb-sales').textContent=ts||''; if(g('sb-debts')) g('sb-debts').textContent=owing||''; u>0?g('tb-ndot').classList.remove('h'):g('tb-ndot').classList.add('h'); }
 
 // ── STAFF ─────────────────────────────────────────
 function renderStaff(){
@@ -1842,7 +1879,7 @@ adjGrids();
 document.addEventListener('keydown',e=>{
   const pinVis=!g('lock-screen').classList.contains('h');
   if(pinVis){if(e.key>='0'&&e.key<='9')pk(e.key);if(e.key==='Backspace')pdel();}
-  if(e.key==='Escape'){['prod-modal','sale-modal','del-modal','stock-modal','staff-modal','rcpt-modal','return-modal','void-modal','cust-modal','cust-hist-modal','exp-modal'].forEach(closeM);closeSB();}
+  if(e.key==='Escape'){['prod-modal','sale-modal','del-modal','stock-modal','staff-modal','rcpt-modal','return-modal','void-modal','cust-modal','cust-hist-modal','exp-modal','debt-modal'].forEach(closeM);closeSB();}
 });
 
 
@@ -1953,6 +1990,117 @@ function exportExpCSV(){
   dlCSV(rows,'expenses.csv'); toast('Exported!','s');
 }
 
+// ── DEBTS (customer credit / money owed to store) ──
+let DEBTS = [];
+
+async function loadDebts(){
+  try{
+    const snap = await db.collection('buyers').doc(BID).collection('debts').get();
+    DEBTS = snap.docs.map(d=>({id:d.id,...d.data()}));
+    DEBTS.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+    renderDebts();
+    renderDebtSummary();
+    updBadges();
+  }catch(e){console.warn('debts:',e.message);}
+}
+
+function debtBalance(d){ return Math.max(0,(d.amount||0)-(d.paid||0)); }
+
+function renderDebtSummary(){
+  const totalOwed = DEBTS.reduce((a,d)=>a+(d.amount||0),0);
+  const collected = DEBTS.reduce((a,d)=>a+(d.paid||0),0);
+  const outstanding = totalOwed - collected;
+  if(g('debt-total')) g('debt-total').textContent = fmt(totalOwed);
+  if(g('debt-collected')) g('debt-collected').textContent = fmt(collected);
+  if(g('debt-outstanding')) g('debt-outstanding').textContent = fmt(outstanding);
+}
+
+function renderDebts(){
+  const q=(g('debt-search')?.value||'').toLowerCase();
+  const status=g('debt-status-filter')?.value||'';
+  let list=DEBTS.filter(d=>{
+    if(q&&!(d.customer||'').toLowerCase().includes(q)) return false;
+    const bal=debtBalance(d);
+    if(status==='owing'&&bal<=0) return false;
+    if(status==='paid'&&bal>0) return false;
+    return true;
+  });
+  if(g('debt-sub')) g('debt-sub').textContent=list.length+' debt'+(list.length!==1?'s':'');
+  const tb=g('debt-tb');
+  if(!tb) return;
+  if(!list.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><div class="empty-icon">📒</div><div class="empty-title">No debts found</div><div class="empty-sub">Click "+ Record Debt" to add one</div></div></td></tr>';return;}
+  tb.innerHTML=list.map((d,i)=>{
+    const bal=debtBalance(d);
+    const isPaid=bal<=0;
+    const overdue=!isPaid&&d.dueDate&&new Date(d.dueDate)<new Date();
+    return `<tr><td style="color:var(--t4);font-size:.77rem">${list.length-i}</td><td class="td-n">${esc(d.customer)}</td><td style="font-size:.79rem;color:var(--t3)">${esc(d.phone||'—')}</td><td style="font-weight:700">${fmt(d.amount)}</td><td style="color:#059669">${fmt(d.paid||0)}</td><td style="color:${isPaid?'#059669':'#DC2626'};font-weight:700">${fmt(bal)}</td><td style="font-size:.77rem;color:${overdue?'#DC2626':'var(--t4)'}">${d.dueDate?fmtDT(d.dueDate):'—'}</td><td><span class="bdg ${isPaid?'bdg-g':overdue?'bdg-r':'bdg-a'}">${isPaid?'Paid':overdue?'Overdue':'Owing'}</span></td><td style="display:flex;gap:4px"><button class="sale-action-btn" onclick="recordPayment('${d.id}')" ${isPaid?'disabled':''}>💰</button><button class="sale-action-btn" onclick="openDebtModal('${d.id}')">✏️</button><button class="sale-action-btn danger" onclick="delDebt('${d.id}','${esc(d.customer)}')">🗑</button></td></tr>`;
+  }).join('');
+}
+
+function openDebtModal(id){
+  g('debtm-err').classList.add('h');
+  const now=new Date(), local=new Date(now-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  if(id){
+    const d=DEBTS.find(x=>x.id===id); if(!d) return;
+    g('debtm-t').textContent='Edit Debt'; g('debtm-id').value=id;
+    g('debtm-cust').value=d.customer; g('debtm-phone').value=d.phone||'';
+    g('debtm-amount').value=d.amount; g('debtm-note').value=d.note||'';
+    g('debtm-date').value=d.date?new Date(new Date(d.date)-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16):local;
+    g('debtm-due').value=d.dueDate?d.dueDate.slice(0,10):'';
+  } else {
+    g('debtm-t').textContent='Record Debt'; g('debtm-id').value='';
+    ['debtm-cust','debtm-phone','debtm-note'].forEach(f=>g(f).value='');
+    g('debtm-amount').value=''; g('debtm-date').value=local; g('debtm-due').value='';
+  }
+  openM('debt-modal');
+}
+
+async function saveDebt(){
+  const customer=g('debtm-cust').value.trim(), phone=g('debtm-phone').value.trim();
+  const amount=parseFloat(g('debtm-amount').value), date=g('debtm-date').value;
+  const due=g('debtm-due').value, note=g('debtm-note').value.trim(), did=g('debtm-id').value;
+  if(!customer) return ferr('debtm-err','Customer name is required.');
+  if(isNaN(amount)||amount<=0) return ferr('debtm-err','Enter a valid amount.');
+  if(!date) return ferr('debtm-err','Select a date.');
+  const data={customer,phone,amount,date:new Date(date).toISOString(),dueDate:due?new Date(due).toISOString():'',note,buyerId:BID};
+  try{
+    const col=db.collection('buyers').doc(BID).collection('debts');
+    if(did){await col.doc(did).update(data);toast('Debt updated!','s');}
+    else{await col.add({...data,paid:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});toast('Debt recorded!','s');addNotif('info','Debt Recorded',customer+' owes '+fmt(amount));}
+    closeM('debt-modal'); await loadDebts();
+  }catch(e){ferr('debtm-err','Failed: '+e.message);}
+}
+
+async function recordPayment(id){
+  const d=DEBTS.find(x=>x.id===id); if(!d) return;
+  const bal=debtBalance(d);
+  const input=prompt('Record payment from '+d.customer+' (balance: '+fmt(bal)+'):','');
+  if(input===null) return;
+  const amt=parseFloat(input);
+  if(isNaN(amt)||amt<=0) return toast('Enter a valid amount','e');
+  const newPaid=(d.paid||0)+Math.min(amt,bal);
+  try{
+    await db.collection('buyers').doc(BID).collection('debts').doc(id).update({paid:newPaid});
+    toast('Payment recorded!','s');
+    if(newPaid>=d.amount) addNotif('success','Debt Cleared',d.customer+' has fully paid off their debt.');
+    await loadDebts();
+  }catch(e){toast('Failed: '+e.message,'e');}
+}
+
+async function delDebt(id,name){
+  if(!confirm('Delete debt record for "'+name+'"?')) return;
+  try{
+    await db.collection('buyers').doc(BID).collection('debts').doc(id).delete();
+    toast('Debt deleted','s'); await loadDebts();
+  }catch(e){toast('Failed: '+e.message,'e');}
+}
+
+function exportDebtCSV(){
+  const rows=[['Customer','Phone','Amount','Paid','Balance','Due Date','Note','Date']];
+  DEBTS.forEach(d=>rows.push([d.customer,d.phone||'',d.amount,d.paid||0,debtBalance(d),d.dueDate?fmtDT(d.dueDate):'',d.note||'',fmtDT(d.date)]));
+  dlCSV(rows,'debts.csv'); toast('Exported!','s');
+}
+
 // ── LIVE CLOCK ────────────────────────────────────
 function startClock(){
   function tick(){ const now=new Date(); const t=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); const d=now.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}); const el=g('live-time'); if(el) el.textContent=d+' · '+t; }
@@ -1989,6 +2137,32 @@ console.log('%c Benimtradeco ✓','background:linear-gradient(135deg,#2563EB,#7C
     <div class="mf">
       <button class="btn btn-o" onclick="closeM('exp-modal')">Cancel</button>
       <button class="btn btn-b" onclick="saveExpense()">💾 Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- Debt Modal -->
+<div class="mo h" id="debt-modal">
+  <div class="mb mb-sm">
+    <div class="mh"><span id="debtm-t">Record Debt</span><button class="mc" onclick="closeM('debt-modal')">✕</button></div>
+    <div id="debtm-err" class="errbox h"></div>
+    <div class="fg2">
+      <label class="fl">Customer Name *</label>
+      <input class="fc" id="debtm-cust" placeholder="e.g. John Doe" list="cust-dl"/>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label class="fl">Phone</label><input class="fc" id="debtm-phone" placeholder="Optional"/></div>
+      <div class="fg"><label class="fl">Amount Owed *</label><input class="fc" type="number" id="debtm-amount" placeholder="0.00" min="0" step="0.01"/></div>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label class="fl">Date *</label><input class="fc" type="datetime-local" id="debtm-date"/></div>
+      <div class="fg"><label class="fl">Due Date (optional)</label><input class="fc" type="date" id="debtm-due"/></div>
+    </div>
+    <div class="fg"><label class="fl">Note (optional)</label><input class="fc" id="debtm-note" placeholder="e.g. what was bought…"/></div>
+    <input type="hidden" id="debtm-id"/>
+    <div class="mf">
+      <button class="btn btn-o" onclick="closeM('debt-modal')">Cancel</button>
+      <button class="btn btn-b" onclick="saveDebt()">💾 Save Debt</button>
     </div>
   </div>
 </div>
