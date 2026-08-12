@@ -427,6 +427,7 @@ tbody tr:hover{background:var(--bg)}
     <a class="sb-lk" data-pg="returns" id="nav-returns" onclick="nav('returns')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Returns</a>
     <a class="sb-lk" data-pg="expenses" id="nav-expenses" onclick="nav('expenses')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>Expenses</a>
     <a class="sb-lk" data-pg="debts" id="nav-debts" onclick="nav('debts')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Debts<span class="sb-badge" id="sb-debts"></span></a>
+    <a class="sb-lk" data-pg="payables" id="nav-payables" onclick="nav('payables')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>Payables<span class="sb-badge" id="sb-payables"></span></a>
     <div class="sb-sec" id="admin-section">Admin</div>
     <a class="sb-lk" data-pg="staff" id="nav-staff" onclick="nav('staff')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</a>
     <!-- SA only: Buyers nav -->
@@ -622,7 +623,7 @@ tbody tr:hover{background:var(--bg)}
     <!-- DEBTS -->
     <div class="pg" id="pg-debts">
       <div class="pg-head">
-        <div><h2>Debts</h2><div class="pg-sub" id="debt-sub">0 debts</div></div>
+        <div><h2>Debts</h2><div class="pg-sub">Money customers owe you · <span id="debt-sub">0 debts</span></div></div>
         <button class="btn btn-b btn-sm" onclick="openDebtModal()">+ Record Debt</button>
       </div>
       <!-- Summary Cards -->
@@ -649,6 +650,41 @@ tbody tr:hover{background:var(--bg)}
           <table>
             <thead><tr><th>#</th><th>Customer</th><th>Phone</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Due Date</th><th>Status</th><th></th></tr></thead>
             <tbody id="debt-tb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYABLES (money YOU owe others) -->
+    <div class="pg" id="pg-payables">
+      <div class="pg-head">
+        <div><h2>Payables</h2><div class="pg-sub">Money you owe suppliers/others · <span id="pay-sub">0 payables</span></div></div>
+        <button class="btn btn-b btn-sm" onclick="openPayModal()">+ Record Payable</button>
+      </div>
+      <!-- Summary Cards -->
+      <div class="sg" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
+        <div class="sc"><div><div class="label">Total Owed by You</div><div class="value" style="color:#DC2626" id="pay-total">₦0</div></div></div>
+        <div class="sc"><div><div class="label">Paid Back</div><div class="value" style="color:#059669" id="pay-paid">₦0</div></div></div>
+        <div class="sc"><div><div class="label">Still Owing</div><div class="value" style="color:#D97706" id="pay-outstanding">₦0</div></div></div>
+      </div>
+      <!-- Filter -->
+      <div class="card" style="margin-bottom:14px;padding:12px 14px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input class="fc" style="flex:1;min-width:140px" id="pay-search" placeholder="🔍 Search by creditor…" oninput="renderPayables()"/>
+          <select class="fc" style="min-width:130px" id="pay-status-filter" onchange="renderPayables()">
+            <option value="">All Status</option>
+            <option value="owing">Owing</option>
+            <option value="paid">Paid Off</option>
+          </select>
+          <button class="btn btn-o btn-sm" onclick="exportPayCSV()">📤 Export</button>
+        </div>
+      </div>
+      <!-- Table -->
+      <div class="card">
+        <div class="tw">
+          <table>
+            <thead><tr><th>#</th><th>Owed To</th><th>Phone</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Due Date</th><th>Status</th><th></th></tr></thead>
+            <tbody id="pay-tb"></tbody>
           </table>
         </div>
       </div>
@@ -1136,9 +1172,9 @@ function nav(pg){
   document.querySelectorAll('.sb-lk').forEach(l=>l.classList.remove('on'));
   const p=g('pg-'+pg); if(p) p.classList.add('on');
   const l=document.querySelector('[data-pg="'+pg+'"]'); if(l) l.classList.add('on');
-  const titles={dashboard:'Dashboard',products:'Products',sales:'Sales',reports:'Reports',alerts:'Alerts',staff:'Staff',returns:'Returns',settings:'Settings',customers:'Customers',expenses:'Expenses',debts:'Debts'};
+  const titles={dashboard:'Dashboard',products:'Products',sales:'Sales',reports:'Reports',alerts:'Alerts',staff:'Staff',returns:'Returns',settings:'Settings',customers:'Customers',expenses:'Expenses',debts:'Debts',payables:'Payables'};
   g('tb-title').textContent=titles[pg]||pg;
-  const renderMap={dashboard:renderDash,products:renderProds,sales:renderSales,reports:renderRpt,alerts:renderNotifs,staff:renderStaff,returns:renderReturns,customers:renderCustomers,expenses:renderExpenses,debts:renderDebts};
+  const renderMap={dashboard:renderDash,products:renderProds,sales:renderSales,reports:renderRpt,alerts:renderNotifs,staff:renderStaff,returns:renderReturns,customers:renderCustomers,expenses:renderExpenses,debts:renderDebts,payables:renderPayables};
   if(renderMap[pg]) renderMap[pg]();
   const fetchMap={
     returns:()=>loadReturns(),
@@ -1147,6 +1183,7 @@ function nav(pg){
     customers:()=>subscribeCustomers(),
     expenses:()=>loadExpenses(),
     debts:()=>loadDebts(),
+    payables:()=>loadPayables(),
   };
   if(fetchMap[pg]) fetchMap[pg]();
   closeSB();
@@ -1159,7 +1196,7 @@ function closeSB(){ g('sidebar').classList.remove('open'); g('sb-ovl').classList
 function logout(){
   UNSUBS.forEach(fn=>fn&&fn()); UNSUBS=[];
   ME=null; BID=STORE_ID;
-  PRODS=[]; SALES=[]; NOTIFS=[]; STAFF=[]; CUSTOMERS=[]; RETURNS=[]; DEBTS=[];
+  PRODS=[]; SALES=[]; NOTIFS=[]; STAFF=[]; CUSTOMERS=[]; RETURNS=[]; DEBTS=[]; PAYABLES=[];
   pBuf=''; pDots();
   show('lock-screen');
 }
@@ -1671,7 +1708,7 @@ function renderNotifs(){
 async function markRead(id){ try{ await db.collection('buyers').doc(BID).collection('notifications').doc(id).update({read:true}); const n=NOTIFS.find(x=>x.id===id); if(n) n.read=true; renderNotifs(); updBadges(); }catch(e){} }
 async function markAllRead(){ const batch=db.batch(); NOTIFS.filter(n=>!n.read).forEach(n=>batch.update(db.collection('buyers').doc(BID).collection('notifications').doc(n.id),{read:true})); try{await batch.commit();NOTIFS.forEach(n=>n.read=true);renderNotifs();updBadges();toast('All read','s');}catch(e){} }
 function checkLowStock(){ PRODS.filter(p=>p.quantity<=(p.lowAt||CFG.threshold)).forEach(p=>{ const exists=NOTIFS.some(n=>!n.read&&n.text?.includes(p.name)); if(!exists) addNotif('warn','Low Stock',p.name+' is low ('+p.quantity+' units).'); }); }
-function updBadges(){ const u=NOTIFS.filter(n=>!n.read).length; const ts=SALES.filter(s=>new Date(s.timestamp).toDateString()===new Date().toDateString()).length; const owing=DEBTS.filter(d=>debtBalance(d)>0).length; g('sb-notif').textContent=u||''; g('sb-sales').textContent=ts||''; if(g('sb-debts')) g('sb-debts').textContent=owing||''; u>0?g('tb-ndot').classList.remove('h'):g('tb-ndot').classList.add('h'); }
+function updBadges(){ const u=NOTIFS.filter(n=>!n.read).length; const ts=SALES.filter(s=>new Date(s.timestamp).toDateString()===new Date().toDateString()).length; const owing=DEBTS.filter(d=>debtBalance(d)>0).length; const owe=PAYABLES.filter(p=>payBalance(p)>0).length; g('sb-notif').textContent=u||''; g('sb-sales').textContent=ts||''; if(g('sb-debts')) g('sb-debts').textContent=owing||''; if(g('sb-payables')) g('sb-payables').textContent=owe||''; u>0?g('tb-ndot').classList.remove('h'):g('tb-ndot').classList.add('h'); }
 
 // ── STAFF ─────────────────────────────────────────
 function renderStaff(){
@@ -1879,7 +1916,7 @@ adjGrids();
 document.addEventListener('keydown',e=>{
   const pinVis=!g('lock-screen').classList.contains('h');
   if(pinVis){if(e.key>='0'&&e.key<='9')pk(e.key);if(e.key==='Backspace')pdel();}
-  if(e.key==='Escape'){['prod-modal','sale-modal','del-modal','stock-modal','staff-modal','rcpt-modal','return-modal','void-modal','cust-modal','cust-hist-modal','exp-modal','debt-modal'].forEach(closeM);closeSB();}
+  if(e.key==='Escape'){['prod-modal','sale-modal','del-modal','stock-modal','staff-modal','rcpt-modal','return-modal','void-modal','cust-modal','cust-hist-modal','exp-modal','debt-modal','pay-modal'].forEach(closeM);closeSB();}
 });
 
 
@@ -2101,6 +2138,117 @@ function exportDebtCSV(){
   dlCSV(rows,'debts.csv'); toast('Exported!','s');
 }
 
+// ── PAYABLES (money YOU owe suppliers/others) ──
+let PAYABLES = [];
+
+async function loadPayables(){
+  try{
+    const snap = await db.collection('buyers').doc(BID).collection('payables').get();
+    PAYABLES = snap.docs.map(d=>({id:d.id,...d.data()}));
+    PAYABLES.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+    renderPayables();
+    renderPaySummary();
+    updBadges();
+  }catch(e){console.warn('payables:',e.message);}
+}
+
+function payBalance(p){ return Math.max(0,(p.amount||0)-(p.paid||0)); }
+
+function renderPaySummary(){
+  const totalOwed = PAYABLES.reduce((a,p)=>a+(p.amount||0),0);
+  const paidBack = PAYABLES.reduce((a,p)=>a+(p.paid||0),0);
+  const outstanding = totalOwed - paidBack;
+  if(g('pay-total')) g('pay-total').textContent = fmt(totalOwed);
+  if(g('pay-paid')) g('pay-paid').textContent = fmt(paidBack);
+  if(g('pay-outstanding')) g('pay-outstanding').textContent = fmt(outstanding);
+}
+
+function renderPayables(){
+  const q=(g('pay-search')?.value||'').toLowerCase();
+  const status=g('pay-status-filter')?.value||'';
+  let list=PAYABLES.filter(p=>{
+    if(q&&!(p.who||'').toLowerCase().includes(q)) return false;
+    const bal=payBalance(p);
+    if(status==='owing'&&bal<=0) return false;
+    if(status==='paid'&&bal>0) return false;
+    return true;
+  });
+  if(g('pay-sub')) g('pay-sub').textContent=list.length+' payable'+(list.length!==1?'s':'');
+  const tb=g('pay-tb');
+  if(!tb) return;
+  if(!list.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No payables found</div><div class="empty-sub">Click "+ Record Payable" to add one</div></div></td></tr>';return;}
+  tb.innerHTML=list.map((p,i)=>{
+    const bal=payBalance(p);
+    const isPaid=bal<=0;
+    const overdue=!isPaid&&p.dueDate&&new Date(p.dueDate)<new Date();
+    return `<tr><td style="color:var(--t4);font-size:.77rem">${list.length-i}</td><td class="td-n">${esc(p.who)}</td><td style="font-size:.79rem;color:var(--t3)">${esc(p.phone||'—')}</td><td style="font-weight:700">${fmt(p.amount)}</td><td style="color:#059669">${fmt(p.paid||0)}</td><td style="color:${isPaid?'#059669':'#DC2626'};font-weight:700">${fmt(bal)}</td><td style="font-size:.77rem;color:${overdue?'#DC2626':'var(--t4)'}">${p.dueDate?fmtDT(p.dueDate):'—'}</td><td><span class="bdg ${isPaid?'bdg-g':overdue?'bdg-r':'bdg-a'}">${isPaid?'Paid':overdue?'Overdue':'Owing'}</span></td><td style="display:flex;gap:4px"><button class="sale-action-btn" onclick="recordPayablePayment('${p.id}')" ${isPaid?'disabled':''}>💰</button><button class="sale-action-btn" onclick="openPayModal('${p.id}')">✏️</button><button class="sale-action-btn danger" onclick="delPayable('${p.id}','${esc(p.who)}')">🗑</button></td></tr>`;
+  }).join('');
+}
+
+function openPayModal(id){
+  g('paym-err').classList.add('h');
+  const now=new Date(), local=new Date(now-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  if(id){
+    const p=PAYABLES.find(x=>x.id===id); if(!p) return;
+    g('paym-t').textContent='Edit Payable'; g('paym-id').value=id;
+    g('paym-who').value=p.who; g('paym-phone').value=p.phone||'';
+    g('paym-amount').value=p.amount; g('paym-note').value=p.note||'';
+    g('paym-date').value=p.date?new Date(new Date(p.date)-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16):local;
+    g('paym-due').value=p.dueDate?p.dueDate.slice(0,10):'';
+  } else {
+    g('paym-t').textContent='Record Payable'; g('paym-id').value='';
+    ['paym-who','paym-phone','paym-note'].forEach(f=>g(f).value='');
+    g('paym-amount').value=''; g('paym-date').value=local; g('paym-due').value='';
+  }
+  openM('pay-modal');
+}
+
+async function savePayable(){
+  const who=g('paym-who').value.trim(), phone=g('paym-phone').value.trim();
+  const amount=parseFloat(g('paym-amount').value), date=g('paym-date').value;
+  const due=g('paym-due').value, note=g('paym-note').value.trim(), pid=g('paym-id').value;
+  if(!who) return ferr('paym-err','Name of who you owe is required.');
+  if(isNaN(amount)||amount<=0) return ferr('paym-err','Enter a valid amount.');
+  if(!date) return ferr('paym-err','Select a date.');
+  const data={who,phone,amount,date:new Date(date).toISOString(),dueDate:due?new Date(due).toISOString():'',note,buyerId:BID};
+  try{
+    const col=db.collection('buyers').doc(BID).collection('payables');
+    if(pid){await col.doc(pid).update(data);toast('Payable updated!','s');}
+    else{await col.add({...data,paid:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});toast('Payable recorded!','s');addNotif('info','Payable Recorded','You owe '+who+' '+fmt(amount));}
+    closeM('pay-modal'); await loadPayables();
+  }catch(e){ferr('paym-err','Failed: '+e.message);}
+}
+
+async function recordPayablePayment(id){
+  const p=PAYABLES.find(x=>x.id===id); if(!p) return;
+  const bal=payBalance(p);
+  const input=prompt('Record payment made to '+p.who+' (balance: '+fmt(bal)+'):','');
+  if(input===null) return;
+  const amt=parseFloat(input);
+  if(isNaN(amt)||amt<=0) return toast('Enter a valid amount','e');
+  const newPaid=(p.paid||0)+Math.min(amt,bal);
+  try{
+    await db.collection('buyers').doc(BID).collection('payables').doc(id).update({paid:newPaid});
+    toast('Payment recorded!','s');
+    if(newPaid>=p.amount) addNotif('success','Payable Cleared','You have fully paid off your debt to '+p.who+'.');
+    await loadPayables();
+  }catch(e){toast('Failed: '+e.message,'e');}
+}
+
+async function delPayable(id,who){
+  if(!confirm('Delete payable record for "'+who+'"?')) return;
+  try{
+    await db.collection('buyers').doc(BID).collection('payables').doc(id).delete();
+    toast('Payable deleted','s'); await loadPayables();
+  }catch(e){toast('Failed: '+e.message,'e');}
+}
+
+function exportPayCSV(){
+  const rows=[['Owed To','Phone','Amount','Paid','Balance','Due Date','Note','Date']];
+  PAYABLES.forEach(p=>rows.push([p.who,p.phone||'',p.amount,p.paid||0,payBalance(p),p.dueDate?fmtDT(p.dueDate):'',p.note||'',fmtDT(p.date)]));
+  dlCSV(rows,'payables.csv'); toast('Exported!','s');
+}
+
 // ── LIVE CLOCK ────────────────────────────────────
 function startClock(){
   function tick(){ const now=new Date(); const t=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); const d=now.toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}); const el=g('live-time'); if(el) el.textContent=d+' · '+t; }
@@ -2163,6 +2311,32 @@ console.log('%c Benimtradeco ✓','background:linear-gradient(135deg,#2563EB,#7C
     <div class="mf">
       <button class="btn btn-o" onclick="closeM('debt-modal')">Cancel</button>
       <button class="btn btn-b" onclick="saveDebt()">💾 Save Debt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payable Modal -->
+<div class="mo h" id="pay-modal">
+  <div class="mb mb-sm">
+    <div class="mh"><span id="paym-t">Record Payable</span><button class="mc" onclick="closeM('pay-modal')">✕</button></div>
+    <div id="paym-err" class="errbox h"></div>
+    <div class="fg2">
+      <label class="fl">Owed To (Supplier/Person) *</label>
+      <input class="fc" id="paym-who" placeholder="e.g. ABC Distributors"/>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label class="fl">Phone</label><input class="fc" id="paym-phone" placeholder="Optional"/></div>
+      <div class="fg"><label class="fl">Amount Owed *</label><input class="fc" type="number" id="paym-amount" placeholder="0.00" min="0" step="0.01"/></div>
+    </div>
+    <div class="fg2">
+      <div class="fg"><label class="fl">Date *</label><input class="fc" type="datetime-local" id="paym-date"/></div>
+      <div class="fg"><label class="fl">Due Date (optional)</label><input class="fc" type="date" id="paym-due"/></div>
+    </div>
+    <div class="fg"><label class="fl">Note (optional)</label><input class="fc" id="paym-note" placeholder="e.g. what it was for…"/></div>
+    <input type="hidden" id="paym-id"/>
+    <div class="mf">
+      <button class="btn btn-o" onclick="closeM('pay-modal')">Cancel</button>
+      <button class="btn btn-b" onclick="savePayable()">💾 Save Payable</button>
     </div>
   </div>
 </div>
