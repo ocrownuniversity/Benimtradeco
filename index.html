@@ -202,9 +202,9 @@ tbody tr:hover{background:var(--bg)}
 .pc-btns{display:flex;gap:4px;margin-top:9px;padding-top:9px;border-top:1px solid var(--bord)}
 
 /* ── MODAL ── */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:14px;animation:moIn .2s ease}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom));animation:moIn .2s ease}
 @keyframes moIn{from{opacity:0}to{opacity:1}}
-.mb{background:var(--surf);border-radius:18px;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.25);animation:moUp .25s ease}
+.mb{background:var(--surf);border-radius:18px;width:100%;max-width:500px;max-height:88vh;max-height:88dvh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.25);animation:moUp .25s ease}
 @keyframes moUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .mb-sm{max-width:370px}
 .mb-lg{max-width:620px}
@@ -213,7 +213,7 @@ tbody tr:hover{background:var(--bg)}
 .mx{width:27px;height:27px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--t3);cursor:pointer;transition:all .2s;font-size:.88rem}
 .mx:hover{background:var(--bg);color:var(--t1)}
 .mbd{padding:18px 20px}
-.mf{padding:13px 20px;border-top:1px solid var(--bord);display:flex;justify-content:flex-end;gap:8px}
+.mf{padding:13px 20px;border-top:1px solid var(--bord);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--surf);z-index:1}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:11px}
 .fr .fu{grid-column:1/-1}
 .fg2{margin-bottom:13px}
